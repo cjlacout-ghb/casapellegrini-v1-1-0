@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+@theme {
+  /* Fonts */
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-noto-serif);
+
+  /* Colors: Exact Stitch Project Palette */
+  --color-parchment: #F9F7F2;
+  /* Stitch Background */
+  --color-charcoal: #1A1A1A;
+  /* Stitch Dark Color */
+  --color-sienna: #d44211;
+  /* Stitch Custom Accent */
+  --color-sand: #E5E0D8;
+  /* Stitch Muted */
+  --color-taupe: #D7D0C5;
+
+  /* Mapping to Semantic Tailwind Colors */
+  --color-background: var(--color-parchment);
+  --color-foreground: var(--color-charcoal);
+  --color-accent: var(--color-sienna);
+  --color-gold: var(--color-sienna);
+  --color-muted: var(--color-sand);
+
+  /* Shadows: Depth & Elegance */
+  --shadow-museum: 0 30px 60px -12px rgba(26, 26, 26, 0.08);
+  --shadow-museum-lg: 0 50px 100px -20px rgba(26, 26, 26, 0.12);
+
+  /* Radii: Standardizing to ROUND_EIGHT */
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+}
+
+/* Base Styles */
+:root {
+  --background: #F9F7F2;
+  --foreground: #1A1A1A;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-serif);
+  letter-spacing: -0.02em;
+}
+
+/* Typography Refinements */
+.tracking-museum {
+  letter-spacing: 0.15em;
+}
+
+/* Gallery Utilities */
+.glass-effect {
+  background: rgba(249, 247, 242, 0.7);
+  backdrop-filter: blur(10px);
+}
+
+.border-museum {
+  border: 0.5px solid rgba(26, 26, 26, 0.1);
+  border-radius: var(--radius-lg);
+}
+
+.museum-hover {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-lg);
+}
+
+.museum-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-museum-lg);
+}
+
+@keyframes pulse-latent {
+  0% {
+    transform: scale(0.9);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(0.9);
+    opacity: 1;
+  }
+}
+
+.animate-pulse-latent {
+  animation: pulse-latent 3s ease-in-out infinite;
+}
