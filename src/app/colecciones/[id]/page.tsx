@@ -2,6 +2,7 @@ import { products } from '@/data/products';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import ProductGallery from '@/components/products/ProductGallery';
 
 export async function generateStaticParams() {
     return products.map(p => ({ id: p.id }));
@@ -32,28 +33,13 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-start">
 
-                    {/* Primary Exhibition (Image) */}
+                    {/* Primary Exhibition (Gallery) */}
                     <div className="lg:col-span-7 sticky top-32">
-                        <div className="relative aspect-[4/5] w-full bg-white border-museum shadow-museum overflow-hidden">
-                            {product.status !== 'Available' && (
-                                <div className="absolute top-6 right-6 glass-effect px-4 py-2 border border-taupe/30 text-[10px] uppercase tracking-widest z-10 text-charcoal shadow-sm">
-                                    {product.status === 'Reserved' ? 'Pieza Reservada' : 'Adquirida'}
-                                </div>
-                            )}
-                            <Image
-                                src={product.image}
-                                alt={product.title}
-                                fill
-                                className="object-cover"
-                                priority
-                            />
-                        </div>
-                        {/* Secondary Views Indicator */}
-                        <div className="mt-8 flex justify-center gap-6">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="w-12 h-px bg-taupe/40"></div>
-                            ))}
-                        </div>
+                        <ProductGallery
+                            images={product.gallery || [product.image]}
+                            title={product.title}
+                            status={product.status}
+                        />
                     </div>
 
                     {/* Curatorial Text & Inscription */}

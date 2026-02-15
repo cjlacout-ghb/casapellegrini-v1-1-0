@@ -4,6 +4,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { categories } from '@/data/products';
+import {
+    ChevronLeft,
+    Upload,
+    Plus,
+    LayoutDashboard,
+    Settings,
+    FolderOpen,
+    Eye,
+    LogOut,
+    Info,
+    Camera
+} from 'lucide-react';
 
 export default function NuevoObjetoPage() {
     const router = useRouter();
@@ -16,195 +28,246 @@ export default function NuevoObjetoPage() {
         material: '',
         provenance: '',
         description: '',
-        status: 'Available'
+        status: 'Available' as const
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        alert('Objeto guardado exitosamente (Simulación)');
-        router.push('/admin/dashboard');
+        // Simulación de guardado premium
+        const btn = e.currentTarget.querySelector('button[type="submit"]');
+        if (btn) btn.innerHTML = 'Catalogando...';
+
+        setTimeout(() => {
+            router.push('/admin/dashboard');
+        }, 1500);
     };
 
     return (
-        <div className="min-h-screen bg-cream flex">
-            {/* Sidebar - Consistent with Admin Dashboard */}
-            <aside className="w-64 bg-charcoal text-cream flex-shrink-0 hidden md:flex flex-col sticky top-0 h-screen">
-                <div className="p-8 border-b border-white/10">
-                    <Link href="/admin/dashboard" className="font-serif text-xl tracking-widest font-bold block">CASA PELLEGRINI</Link>
-                    <p className="text-[10px] text-gold uppercase tracking-[0.2em] mt-1">Admin Panel</p>
+        <div className="min-h-screen bg-[#FDFCF9] flex overflow-hidden">
+            {/* Sidebar - Curator Navigation */}
+            <aside className="w-72 bg-charcoal text-parchment flex-shrink-0 flex flex-col border-r border-white/5">
+                <div className="p-8 pt-12">
+                    <h1 className="font-serif text-2xl tracking-[0.2em] font-light text-white">CASA</h1>
+                    <h1 className="font-serif text-2xl tracking-[0.2em] font-bold text-sienna -mt-1">PELLEGRINI</h1>
+                    <div className="mt-2 flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-sienna animate-pulse" />
+                        <p className="text-[10px] text-parchment/40 uppercase tracking-[0.3em]">Modo Curador</p>
+                    </div>
                 </div>
 
-                <nav className="flex-1 p-6 space-y-2">
-                    <Link href="/admin/dashboard" className="block px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-md text-sm uppercase tracking-widest transition-colors">Inventario</Link>
-                    <Link href="/admin/nuevo" className="block px-4 py-3 bg-white/10 rounded-md text-sm uppercase tracking-widest text-gold font-bold">Añadir Objeto</Link>
+                <nav className="flex-1 px-4 mt-8 space-y-1">
+                    <Link href="/admin/dashboard" className="px-4 py-3 text-parchment/50 hover:text-white hover:bg-white/5 transition-all text-xs uppercase tracking-widest flex items-center gap-3">
+                        <LayoutDashboard size={16} />
+                        Inventario
+                    </Link>
+                    <div className="px-4 py-3 bg-sienna/10 border-l-2 border-sienna text-sienna font-medium text-xs uppercase tracking-widest flex items-center gap-3">
+                        <Plus size={16} />
+                        Catalogar Pieza
+                    </div>
+                    <a href="#" className="px-4 py-3 text-parchment/50 hover:text-white hover:bg-white/5 transition-all text-xs uppercase tracking-widest flex items-center gap-3">
+                        <FolderOpen size={16} />
+                        Colecciones
+                    </a>
                 </nav>
 
-                <div className="p-6 border-t border-white/10">
-                    <Link href="/admin/dashboard" className="flex items-center gap-2 text-xs uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
-                        <span>← Volver al Panel</span>
+                <div className="p-8 space-y-4">
+                    <Link href="/" className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-parchment/30 hover:text-sienna transition-colors group">
+                        <Eye size={12} />
+                        Ver sitio público
                     </Link>
+                    <button className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-red-400/50 hover:text-red-400 transition-colors">
+                        <LogOut size={12} />
+                        Cerrar Sesión
+                    </button>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-8 md:p-12 overflow-y-auto max-w-5xl mx-auto">
-                <div className="mb-12">
-                    <h1 className="text-4xl font-serif text-charcoal">Catalogar Nueva Pieza</h1>
-                    <p className="text-gray-500 mt-2">Complete la información técnica y suba las imágenes de alta calidad.</p>
+            <main className="flex-1 overflow-y-auto">
+                <header className="h-24 bg-white border-b border-sand flex items-center justify-between px-12 sticky top-0 z-10">
+                    <div className="flex items-center gap-6">
+                        <Link href="/admin/dashboard" className="p-2 hover:bg-parchment rounded-full transition-colors text-charcoal/40 hover:text-charcoal mr-2">
+                            <ChevronLeft size={24} />
+                        </Link>
+                        <div>
+                            <h2 className="text-2xl font-serif text-charcoal italic">Nueva Adquisición</h2>
+                            <p className="text-[10px] uppercase tracking-[0.1em] text-charcoal/40 font-medium">Registro detallado de pieza patrimonial</p>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                        <Link href="/admin/dashboard" className="px-6 py-3 border border-sand hover:bg-parchment text-charcoal/60 uppercase tracking-widest text-[10px] font-bold rounded-lg transition-all">
+                            Descartar
+                        </Link>
+                        <button
+                            form="catalog-form"
+                            type="submit"
+                            className="bg-sienna hover:bg-[#b0360d] text-white px-8 py-3 rounded-lg uppercase tracking-widest text-[10px] font-bold transition-all shadow-xl shadow-sienna/20 active:scale-95"
+                        >
+                            Catalogar Pieza
+                        </button>
+                    </div>
+                </header>
+
+                <div className="p-12 max-w-6xl mx-auto">
+                    <form id="catalog-form" onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+
+                        {/* Left Column: Visual Assets */}
+                        <div className="lg:col-span-5 space-y-8">
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-sienna flex items-center gap-2">
+                                        <Camera size={14} />
+                                        Registro Fotográfico
+                                    </h3>
+                                    <span className="text-[9px] text-charcoal/30 uppercase font-medium">Recomendado: 4:5 Aspect Ratio</span>
+                                </div>
+                                <div className="aspect-[4/5] bg-white border-2 border-dashed border-sand rounded-2xl flex flex-col items-center justify-center p-12 text-center group hover:border-sienna/40 transition-all cursor-pointer shadow-sm hover:shadow-xl hover:shadow-sienna/5">
+                                    <div className="w-20 h-20 bg-parchment rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                        <Upload className="text-charcoal/20 group-hover:text-sienna transition-colors" size={32} />
+                                    </div>
+                                    <p className="text-sm font-serif italic text-charcoal mb-2 font-medium">Arrastre la imagen principal</p>
+                                    <p className="text-[10px] text-charcoal/30 uppercase tracking-widest leading-relaxed">Alta resolución (JPG, WEBP)<br />Máximo 10MB por archivo</p>
+                                </div>
+
+                                <div className="grid grid-cols-4 gap-4">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="aspect-square bg-white border border-sand rounded-xl flex items-center justify-center group hover:border-sienna/30 transition-all cursor-pointer overflow-hidden">
+                                            <div className="w-8 h-8 rounded-full bg-parchment flex items-center justify-center text-charcoal/20 group-hover:text-sienna">
+                                                <Plus size={16} />
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <div className="aspect-square border border-dashed border-sand rounded-xl flex items-center justify-center text-charcoal/20">
+                                        <span className="text-xs uppercase font-bold tracking-tighter tracking-widest">Galería</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-sienna/5 border border-sienna/10 p-6 rounded-2xl flex gap-4">
+                                <Info className="text-sienna flex-shrink-0" size={20} />
+                                <p className="text-[11px] text-sienna/80 leading-relaxed font-medium italic">
+                                    Las imágenes serán procesadas automáticamente para optimizar el tiempo de carga sin perder el detalle de la pátina y los grabados.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Right Column: Curator's Data */}
+                        <div className="lg:col-span-7 space-y-10">
+                            <div className="bg-white p-10 rounded-3xl shadow-sm border border-sand space-y-10">
+                                <div className="space-y-6">
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-sienna">Detalles de la Obra</h3>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase tracking-widest text-charcoal/40 font-bold ml-1">Título de la Pieza</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="w-full bg-parchment/30 border-b border-sand py-4 px-2 outline-none focus:border-sienna transition-all text-xl font-serif italic"
+                                            placeholder="Nombre descriptivo de la obra..."
+                                            value={formData.title}
+                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-8">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase tracking-widest text-charcoal/40 font-bold ml-1">Categoría</label>
+                                            <select
+                                                className="w-full bg-transparent border-b border-sand py-4 px-1 outline-none focus:border-sienna text-sm font-medium"
+                                                value={formData.category}
+                                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                            >
+                                                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase tracking-widest text-charcoal/40 font-bold ml-1">Estado de Inventario</label>
+                                            <select
+                                                className="w-full bg-transparent border-b border-sand py-4 px-1 outline-none focus:border-sienna text-sm font-medium"
+                                                value={formData.status}
+                                                onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                                            >
+                                                <option value="Available">Disponible</option>
+                                                <option value="Reserved">Reservado</option>
+                                                <option value="Sold">Vendido</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-8">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase tracking-widest text-charcoal/40 font-bold ml-1">Época / Datación</label>
+                                            <input
+                                                type="text"
+                                                className="w-full bg-transparent border-b border-sand py-4 px-1 outline-none focus:border-sienna text-sm font-serif italic"
+                                                placeholder="Ej: Circa 1850"
+                                                value={formData.year}
+                                                onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase tracking-widest text-charcoal/40 font-bold ml-1">Origen Geográfico</label>
+                                            <input
+                                                type="text"
+                                                className="w-full bg-transparent border-b border-sand py-4 px-1 outline-none focus:border-sienna text-sm font-serif italic"
+                                                placeholder="Ej: Madrid, España"
+                                                value={formData.origin}
+                                                onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-8">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase tracking-widest text-charcoal/40 font-bold ml-1">Dimensiones</label>
+                                            <input
+                                                type="text"
+                                                className="w-full bg-transparent border-b border-sand py-4 px-1 outline-none focus:border-sienna text-sm"
+                                                placeholder="Ej: 110 x 45 x 30 cm"
+                                                value={formData.dimensions}
+                                                onChange={(e) => setFormData({ ...formData, dimensions: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase tracking-widest text-charcoal/40 font-bold ml-1">Materiales Principales</label>
+                                            <input
+                                                type="text"
+                                                className="w-full bg-transparent border-b border-sand py-4 px-1 outline-none focus:border-sienna text-sm"
+                                                placeholder="Ej: Madera de nogal, Bronce"
+                                                value={formData.material}
+                                                onChange={(e) => setFormData({ ...formData, material: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase tracking-widest text-charcoal/40 font-bold ml-1">Procedencia e Historia (Opcional)</label>
+                                        <textarea
+                                            rows={2}
+                                            className="w-full bg-transparent border-b border-sand py-4 px-1 outline-none focus:border-sienna text-sm resize-none font-serif italic"
+                                            placeholder="Detalles sobre adquisiciones anteriores o relevancia histórica..."
+                                            value={formData.provenance}
+                                            onChange={(e) => setFormData({ ...formData, provenance: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase tracking-widest text-charcoal/40 font-bold ml-1">Descripción Curatorial para el Público</label>
+                                        <textarea
+                                            rows={5}
+                                            required
+                                            className="w-full bg-parchment/20 border-sand border p-4 rounded-xl outline-none focus:border-sienna text-sm leading-relaxed"
+                                            placeholder="Redacte un texto que resalte la belleza y el valor de esta pieza..."
+                                            value={formData.description}
+                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-
-                    {/* Left Column: Image Uploader Placeholder */}
-                    <div className="space-y-6">
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-gold">Imágenes del Objeto</h3>
-                        <div className="border-2 border-dashed border-taupe bg-white aspect-[4/5] flex flex-col items-center justify-center p-8 text-center group hover:border-gold transition-colors cursor-pointer rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-taupe group-hover:text-gold mb-4 transition-colors">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            </svg>
-                            <p className="text-sm font-medium text-charcoal">Arrastre las imágenes aquí</p>
-                            <p className="text-xs text-gray-400 mt-2 uppercase tracking-tight">Formatos: JPG, PNG, WEBP (Máx. 5MB)</p>
-                        </div>
-
-                        <div className="grid grid-cols-4 gap-4">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="aspect-square bg-gray-100 rounded border border-muted"></div>
-                            ))}
-                            <div className="aspect-square bg-gray-50 flex items-center justify-center border border-dashed border-muted rounded">
-                                <span className="text-xl text-gray-300">+</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right Column: Technical Specs Form */}
-                    <div className="space-y-8 bg-white p-8 border border-muted shadow-sm rounded-lg">
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-gold">Especificaciones Técnicas</h3>
-
-                        <div className="space-y-6">
-                            <div>
-                                <label className="block text-[10px] uppercase tracking-widest text-gray-400 mb-1 font-bold">Título de la Pieza</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full border-b border-muted py-2 outline-none focus:border-gold transition-colors bg-transparent text-lg font-serif"
-                                    placeholder="Ej: Reloj de Pared Estilo Regency"
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-[10px] uppercase tracking-widest text-gray-400 mb-1 font-bold">Categoría</label>
-                                    <select
-                                        className="w-full border-b border-muted py-2 outline-none focus:border-gold bg-transparent text-sm"
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                    >
-                                        {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] uppercase tracking-widest text-gray-400 mb-1 font-bold">Estado</label>
-                                    <select
-                                        className="w-full border-b border-muted py-2 outline-none focus:border-gold bg-transparent text-sm"
-                                        value={formData.status}
-                                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                    >
-                                        <option value="Available">Disponible</option>
-                                        <option value="Reserved">Reservado</option>
-                                        <option value="Sold">Vendido</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-[10px] uppercase tracking-widest text-gray-400 mb-1 font-bold">Época / Año</label>
-                                    <input
-                                        type="text"
-                                        className="w-full border-b border-muted py-2 outline-none focus:border-gold bg-transparent text-sm"
-                                        placeholder="c. 1880"
-                                        value={formData.year}
-                                        onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] uppercase tracking-widest text-gray-400 mb-1 font-bold">Origen</label>
-                                    <input
-                                        type="text"
-                                        className="w-full border-b border-muted py-2 outline-none focus:border-gold bg-transparent text-sm"
-                                        placeholder="Francia / Inglaterra"
-                                        value={formData.origin}
-                                        onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-[10px] uppercase tracking-widest text-gray-400 mb-1 font-bold">Dimensiones</label>
-                                    <input
-                                        type="text"
-                                        className="w-full border-b border-muted py-2 outline-none focus:border-gold bg-transparent text-sm"
-                                        placeholder="120 x 80 cm"
-                                        value={formData.dimensions}
-                                        onChange={(e) => setFormData({ ...formData, dimensions: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] uppercase tracking-widest text-gray-400 mb-1 font-bold">Materiales</label>
-                                    <input
-                                        type="text"
-                                        className="w-full border-b border-muted py-2 outline-none focus:border-gold bg-transparent text-sm"
-                                        placeholder="Oro de ley, Caoba..."
-                                        value={formData.material}
-                                        onChange={(e) => setFormData({ ...formData, material: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] uppercase tracking-widest text-gray-400 mb-1 font-bold">Procedencia / Historia</label>
-                                <textarea
-                                    rows={2}
-                                    className="w-full border-b border-muted py-2 outline-none focus:border-gold bg-transparent text-sm resize-none"
-                                    placeholder="Detalles sobre el origen de la pieza..."
-                                    value={formData.provenance}
-                                    onChange={(e) => setFormData({ ...formData, provenance: e.target.value })}
-                                ></textarea>
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] uppercase tracking-widest text-gray-400 mb-1 font-bold">Descripción Curatorial</label>
-                                <textarea
-                                    rows={4}
-                                    required
-                                    className="w-full border-b border-muted py-2 outline-none focus:border-gold bg-transparent text-sm resize-none"
-                                    placeholder="Describa la pieza en detalle para el público..."
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                ></textarea>
-                            </div>
-                        </div>
-
-                        <div className="pt-4 flex gap-4">
-                            <Link
-                                href="/admin/dashboard"
-                                className="flex-1 border border-charcoal text-charcoal py-4 text-center text-xs uppercase tracking-widest hover:bg-charcoal hover:text-white transition-all"
-                            >
-                                Cancelar
-                            </Link>
-                            <button
-                                type="submit"
-                                className="flex-1 bg-gold text-white py-4 text-center text-xs uppercase tracking-widest font-bold hover:bg-charcoal transition-all shadow-lg shadow-gold/20"
-                            >
-                                Guardar Pieza
-                            </button>
-                        </div>
-                    </div>
-
-                </form>
             </main>
         </div>
     );
