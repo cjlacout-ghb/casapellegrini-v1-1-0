@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { categories } from '@/data/products';
@@ -15,15 +15,19 @@ import {
     LogOut,
     Info,
     Camera,
-    Loader2
+    Loader2,
+    Save
 } from 'lucide-react';
 import Image from 'next/image';
 
-export default function NuevoObjetoPage() {
+export default function EditarObjetoPage(props: { params: Promise<{ id: string }> }) {
+    const params = use(props.params);
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isUploading, setIsUploading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);
 
@@ -40,6 +44,45 @@ export default function NuevoObjetoPage() {
         price: '',
         show_price: true
     });
+
+    useEffect(() => {
+        fetchItem();
+    }, [params.id]);
+
+    const fetchItem = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('items')
+                .select('*')
+                .eq('id', params.id)
+                .single();
+
+            if (error) throw error;
+            if (data) {
+                setFormData({
+                    title: data.name || '',
+                    category: data.category || 'Muebles',
+                    year: data.year || '',
+                    origin: data.origin || '',
+                    dimensions: data.dimensions || '',
+                    material: data.material || '',
+                    condition: data.condition || 'Excelente / Restaurado',
+                    description: data.description || '',
+                    status: data.status || 'Available',
+                    price: data.price || '',
+                    show_price: data.show_price ?? true
+                });
+                setPreviewUrl(data.image_url);
+                setOriginalImageUrl(data.image_url);
+            }
+        } catch (error: any) {
+            console.error('Error fetching item:', error.message);
+            alert('No se pudo encontrar la pieza.');
+            router.push('/admin/dashboard');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const processFile = (file: File) => {
         if (!file.type.startsWith('image/')) {
@@ -79,58 +122,58 @@ export default function NuevoObjetoPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!imageFile) {
-            alert('Por favor, seleccione una imagen.');
-            return;
-        }
-
-        setIsUploading(true);
+        setIsSaving(true);
 
         try {
-            // 1. Subir imagen a Supabase Storage
-            const fileExt = imageFile.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
-            const filePath = `${fileName}`;
+            let finalImageUrl = originalImageUrl;
 
-            const { error: uploadError } = await supabase.storage
-                .from('inventario')
-                .upload(filePath, imageFile);
+            // 1. Si hay una nueva imagen, subirla
+            if (imageFile) {
+                const fileExt = imageFile.name.split('.').pop();
+                const fileName = `${Math.random()}.${fileExt}`;
+                const filePath = `${fileName}`;
 
-            if (uploadError) throw uploadError;
+                const { error: uploadError } = await supabase.storage
+                    .from('inventario')
+                    .upload(filePath, imageFile);
 
-            // 2. Obtener la URL pública de la imagen
-            const { data: { publicUrl } } = supabase.storage
-                .from('inventario')
-                .getPublicUrl(filePath);
+                if (uploadError) throw uploadError;
 
-            // 3. Guardar en la base de datos
+                const { data: { publicUrl } } = supabase.storage
+                    .from('inventario')
+                    .getPublicUrl(filePath);
+
+                finalImageUrl = publicUrl;
+            }
+
+            // 2. Actualizar en la base de datos
             const { error: dbError } = await supabase
                 .from('items')
-                .insert([
-                    {
-                        name: formData.title,
-                        description: formData.description,
-                        category: formData.category,
-                        image_url: publicUrl,
-                        year: formData.year,
-                        origin: formData.origin,
-                        dimensions: formData.dimensions,
-                        material: formData.material,
-                        condition: formData.condition,
-                        status: formData.status,
-                        price: formData.price,
-                        show_price: formData.show_price
-                    }
-                ]);
+                .update({
+                    name: formData.title,
+                    description: formData.description,
+                    category: formData.category,
+                    image_url: finalImageUrl,
+                    year: formData.year,
+                    origin: formData.origin,
+                    dimensions: formData.dimensions,
+                    material: formData.material,
+                    condition: formData.condition,
+                    status: formData.status,
+                    price: formData.price,
+                    show_price: formData.show_price
+                })
+                .eq('id', params.id);
 
             if (dbError) throw dbError;
 
             router.push('/admin/dashboard');
+            router.refresh();
         } catch (error: any) {
             console.error('Error:', error.message);
-            alert('Error al guardar: ' + error.message);
+            alert('Error al actualizar: ' + error.message);
         } finally {
-            setIsUploading(false);
+            setIsSaving(false);
         }
     };
 
@@ -138,6 +181,15 @@ export default function NuevoObjetoPage() {
         localStorage.removeItem('admin_logged_in');
         router.push('/');
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-parchment flex flex-col items-center justify-center gap-4">
+                <Loader2 className="animate-spin text-sienna" size={40} />
+                <p className="font-serif italic text-charcoal/60 uppercase tracking-widest text-[10px]">Cargando expediente...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#FDFCF9] flex overflow-hidden">
@@ -158,10 +210,10 @@ export default function NuevoObjetoPage() {
                         <LayoutDashboard size={16} />
                         Inventario
                     </Link>
-                    <div className="px-4 py-3 bg-sienna/10 border-l-2 border-sienna text-sienna font-medium text-xs uppercase tracking-widest flex items-center gap-3">
+                    <Link href="/admin/nuevo" className="px-4 py-3 text-parchment/50 hover:text-white hover:bg-white/5 transition-all text-xs uppercase tracking-widest flex items-center gap-3">
                         <Plus size={16} />
                         Catalogar Pieza
-                    </div>
+                    </Link>
                     <a href="#" className="px-4 py-3 text-parchment/50 hover:text-white hover:bg-white/5 transition-all text-xs uppercase tracking-widest flex items-center gap-3">
                         <FolderOpen size={16} />
                         Colecciones
@@ -191,27 +243,32 @@ export default function NuevoObjetoPage() {
                             <ChevronLeft size={24} />
                         </Link>
                         <div>
-                            <h2 className="text-2xl font-serif text-charcoal italic">Nueva Adquisición</h2>
-                            <p className="text-[10px] uppercase tracking-[0.1em] text-charcoal/40 font-medium">Registro detallado de pieza patrimonial</p>
+                            <h2 className="text-2xl font-serif text-charcoal italic">Editar Pieza</h2>
+                            <p className="text-[10px] uppercase tracking-[0.1em] text-charcoal/40 font-medium">Actualización de registro patrimonial</p>
                         </div>
                     </div>
 
                     <div className="flex gap-4">
                         <Link href="/admin/dashboard" className="px-6 py-3 border border-sand hover:bg-parchment text-charcoal/60 uppercase tracking-widest text-[10px] font-bold rounded-lg transition-all">
-                            Descartar
+                            Cancelar
                         </Link>
                         <button
                             form="catalog-form"
                             type="submit"
-                            disabled={isUploading}
-                            className="bg-sienna hover:bg-[#b0360d] text-white px-8 py-3 rounded-lg uppercase tracking-widest text-[10px] font-bold transition-all shadow-xl shadow-sienna/20 active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={isSaving}
+                            className="bg-charcoal hover:bg-charcoal/90 text-white px-8 py-3 rounded-lg uppercase tracking-widest text-[10px] font-bold transition-all shadow-xl shadow-charcoal/20 active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isUploading ? (
+                            {isSaving ? (
                                 <>
                                     <Loader2 size={16} className="animate-spin" />
-                                    Catalogando...
+                                    Guardando...
                                 </>
-                            ) : 'Catalogar Pieza'}
+                            ) : (
+                                <>
+                                    <Save size={16} />
+                                    Guardar Cambios
+                                </>
+                            )}
                         </button>
                     </div>
                 </header>
@@ -242,8 +299,11 @@ export default function NuevoObjetoPage() {
                                     {previewUrl ? (
                                         <>
                                             <Image src={previewUrl} alt="Preview" fill className="object-cover" />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <Upload className="text-white" size={32} />
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-center p-6">
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <Upload className="text-white" size={32} />
+                                                    <p className="text-white text-[10px] uppercase tracking-widest font-bold">Cambiar Fotografía</p>
+                                                </div>
                                             </div>
                                         </>
                                     ) : (
@@ -268,7 +328,7 @@ export default function NuevoObjetoPage() {
                             <div className="bg-sienna/5 border border-sienna/10 p-6 rounded-2xl flex gap-4">
                                 <Info className="text-sienna flex-shrink-0" size={20} />
                                 <p className="text-[11px] text-sienna/80 leading-relaxed font-medium italic">
-                                    Las imágenes serán procesadas automáticamente para optimizar el tiempo de carga sin perder el detalle de la pátina y los grabados.
+                                    Si desea cambiar la fotografía, simplemente arrastre una nueva sobre la actual o haga clic para seleccionar un archivo.
                                 </p>
                             </div>
                         </div>

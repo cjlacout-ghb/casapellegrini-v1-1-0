@@ -1,16 +1,41 @@
-import { products } from '@/data/products';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ProductGallery from '@/components/products/ProductGallery';
+import { supabase } from '@/lib/supabase';
 
-export async function generateStaticParams() {
-    return products.map(p => ({ id: p.id }));
-}
+// Forzamos que la página sea dinámica para que siempre lea de Supabase
+export const dynamic = 'force-dynamic';
 
 export default async function ProductDetailPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
-    const product = products.find(p => p.id === params.id);
+    let product = null;
+
+    // Buscar directamente en Supabase
+    const { data, error } = await supabase
+        .from('items')
+        .select('*')
+        .eq('id', params.id)
+        .single();
+
+    if (data && !error) {
+        product = {
+            id: data.id.toString(),
+            title: data.name,
+            category: data.category,
+            price: data.price || 'Consultar',
+            image: data.image_url,
+            gallery: [data.image_url],
+            status: data.status,
+            year: data.year,
+            origin: data.origin,
+            dimensions: data.dimensions,
+            material: data.material,
+            condition: data.condition,
+            description: data.description,
+            show_price: data.show_price
+        };
+    }
 
     if (!product) return notFound();
 
@@ -44,7 +69,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
 
                     {/* Curatorial Text & Inscription */}
                     <div className="lg:col-span-5 flex flex-col pt-4">
-                        <div className="mb-12">
+                        <div className="mb-8">
                             <div className="flex items-center gap-3 mb-6">
                                 <span className="h-px w-8 bg-sienna"></span>
                                 <span className="text-[11px] uppercase tracking-museum text-sienna font-bold">
@@ -52,11 +77,17 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
                                 </span>
                             </div>
 
-                            <h1 className="text-5xl md:text-6xl font-serif text-charcoal mb-8 leading-[1.1]">
+                            <h1 className="text-5xl md:text-6xl font-serif text-charcoal mb-4 leading-[1.1]">
                                 {product.title}
                             </h1>
 
-                            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 text-[11px] uppercase tracking-museum text-taupe font-medium mb-12 border-b border-taupe/20 pb-8">
+                            <div className="mb-8">
+                                <span className="text-2xl font-serif text-sienna">
+                                    {!product.show_price ? 'Consultar precio' : `Precio: USD ${product.price}`}
+                                </span>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 text-[11px] uppercase tracking-museum text-taupe font-medium mb-6">
                                 <div className="flex flex-col gap-1">
                                     <span className="text-[9px] text-taupe/60 tracking-widest">Época</span>
                                     <span className="text-charcoal">{product.year}</span>
@@ -70,12 +101,17 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
                                     <span className="text-charcoal">#{product.id.padStart(4, '0')}</span>
                                 </div>
                             </div>
+
+                            <hr className="border-none h-px bg-taupe/30 mb-12" />
                         </div>
 
                         <div className="prose prose-stone max-w-none mb-16">
-                            <p className="font-sans text-lg text-charcoal/80 font-light leading-relaxed mb-6 italic border-l-2 border-sienna/20 pl-6">
+                            <p className="font-sans text-lg text-charcoal/80 font-light leading-relaxed mb-8 italic border-l-2 border-sienna/20 pl-6">
                                 {product.description}
                             </p>
+
+                            <hr className="border-none h-px bg-taupe/30 mb-12" />
+
                             <p className="text-sm text-charcoal/60 font-light leading-loose">
                                 Esta pieza representa un testimonio excepcional de la artesanía de su tiempo. Su conservación ha sido tratada con el máximo rigor histórico, preservando la pátina original que confiere a cada objeto su carácter único e irrepetible en el mercado del coleccionismo internacional.
                             </p>
@@ -91,30 +127,30 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
                                 </div>
                                 <div className="flex justify-between items-end border-b border-taupe/10 pb-2">
                                     <dt className="text-[10px] uppercase tracking-museum text-taupe">Estado</dt>
-                                    <dd className="text-xs font-medium text-charcoal italic">Excelente / Restaurado</dd>
+                                    <dd className="text-xs font-medium text-charcoal italic">{product.condition || 'Excelente'}</dd>
                                 </div>
                                 <div className="flex justify-between items-end border-b border-taupe/10 pb-2">
                                     <dt className="text-[10px] uppercase tracking-museum text-taupe">Materiales</dt>
-                                    <dd className="text-xs font-medium text-charcoal italic">Madera Noble / Bronce Cincelado</dd>
+                                    <dd className="text-xs font-medium text-charcoal italic">{product.material || 'N/A'}</dd>
                                 </div>
                             </dl>
                         </div>
 
                         {/* Prestige Inquiry Section */}
-                        <div className="space-y-4 sticky bottom-8 pt-8 bg-parchment/80 backdrop-blur-md">
+                        <div className="space-y-4 pt-12">
                             <a
                                 href={`https://wa.me/5491112345678?text=Hola, solicito información detallada sobre ${product.title} (Ref: #${product.id.padStart(4, '0')})`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="block w-full bg-charcoal text-white text-center py-5 uppercase tracking-museum text-[11px] font-bold hover:bg-sienna transition-all duration-500 shadow-xl rounded-lg"
                             >
-                                Solicitar Información de Pieza
+                                Solicitar Información de la Pieza
                             </a>
                             <Link
                                 href="/contacto"
                                 className="block w-full border-museum text-charcoal text-center py-5 uppercase tracking-museum text-[11px] hover:bg-charcoal hover:text-white transition-all duration-500 rounded-lg"
                             >
-                                Agendar Visita Privada
+                                Agendar Visita
                             </Link>
                             <p className="text-[9px] text-center text-taupe uppercase tracking-widest pt-4">
                                 Atención exclusiva bajo protocolos de galería

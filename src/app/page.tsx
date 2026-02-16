@@ -1,7 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
+import { supabase } from "@/lib/supabase";
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+
+export default async function Home() {
+  const { data: featuredItems, error } = await supabase
+    .from('items')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(3);
+
   return (
     <main className="min-h-screen bg-parchment">
       {/* Hero Section */}
@@ -56,28 +65,40 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-32">
-          {/* Mockup Items with Staggered Layout */}
-          {[
-            { id: 1, title: "Mueble Luis XV", year: "Siglo XVIII", category: "Mueblería" },
-            { id: 2, title: "Reloj de Péndulo", year: "1820", category: "Relojería" },
-            { id: 3, title: "Vaso de Cristal", year: "Art Nouveau", category: "Cristalería" }
-          ].map((item, index) => (
-            <div key={item.id} className={`group cursor-pointer museum-hover ${index % 2 !== 0 ? 'lg:mt-16' : ''}`}>
-              <div className="relative aspect-[4/5] bg-white overflow-hidden mb-8 border-museum shadow-museum group-hover:shadow-museum-lg transition-all duration-700">
-                <div className="w-full h-full bg-[gray] opacity-10 group-hover:scale-105 transition-transform duration-1000 ease-out" />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              </div>
-              <div className="space-y-3 px-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-museum text-sienna">{item.category}</span>
+          {featuredItems && featuredItems.length > 0 ? (
+            featuredItems.map((item, index) => (
+              <Link
+                key={item.id}
+                href={`/colecciones/${item.id}`}
+                className={`group cursor-pointer museum-hover ${index % 2 !== 0 ? 'lg:mt-16' : ''}`}
+              >
+                <div className="relative aspect-[4/5] bg-white overflow-hidden mb-8 border-museum shadow-museum group-hover:shadow-museum-lg transition-all duration-700">
+                  <Image
+                    src={item.image_url || 'https://placehold.co/800x1000/E5E0D8/1A1A1A?text=Sin+Imagen'}
+                    alt={item.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 </div>
-                <h3 className="text-2xl font-serif text-charcoal group-hover:text-sienna transition-colors duration-500">
-                  {item.title}
-                </h3>
-                <p className="text-[10px] uppercase tracking-widest text-taupe">{item.year}</p>
-              </div>
+                <div className="space-y-3 px-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-museum text-sienna">{item.category}</span>
+                  </div>
+                  <h3 className="text-2xl font-serif text-charcoal group-hover:text-sienna transition-colors duration-500">
+                    {item.name}
+                  </h3>
+                  <p className="text-[10px] uppercase tracking-widest text-taupe">{item.year}</p>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className="col-span-full py-20 text-center">
+              <p className="font-serif text-xl text-taupe italic">
+                Estamos preparando nuevas piezas para la galería...
+              </p>
             </div>
-          ))}
+          )}
         </div>
 
         <div className="mt-32 text-center">

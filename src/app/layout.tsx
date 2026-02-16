@@ -1,9 +1,11 @@
-import type { Metadata } from "next";
+'use client';
+
 import { Inter, Noto_Serif } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppButton from "@/components/ui/WhatsAppButton";
 import "./globals.css";
+import { usePathname } from "next/navigation";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -16,25 +18,23 @@ const notoSerif = Noto_Serif({
   weight: ["400", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "Casa Pellegrini – Galería de Antigüedades",
-  description: "Galería de antigüedades exclusiva. Muebles, arte y objetos de colección.",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isAdminPage = pathname?.startsWith('/admin');
+
   return (
     <html lang="es">
       <body
         className={`${inter.variable} ${notoSerif.variable} antialiased bg-[var(--background)] text-[var(--foreground)]`}
       >
-        <Navbar />
+        {!isAdminPage && <Navbar />}
         {children}
-        <WhatsAppButton />
-        <Footer />
+        {!isAdminPage && <WhatsAppButton />}
+        {!isAdminPage && <Footer />}
       </body>
     </html>
   );

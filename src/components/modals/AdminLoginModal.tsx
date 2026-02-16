@@ -19,6 +19,12 @@ const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClose }) =>
 
     useEffect(() => {
         if (isOpen) {
+            // Si ya está logueado, redirigir directo
+            if (localStorage.getItem('admin_logged_in') === 'true') {
+                router.push('/admin/dashboard');
+                onClose();
+                return;
+            }
             setIsVisible(true);
             document.body.style.overflow = 'hidden';
         } else {
@@ -27,7 +33,7 @@ const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClose }) =>
             setError(false);
             return () => clearTimeout(timer);
         }
-    }, [isOpen]);
+    }, [isOpen, router, onClose]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,10 +45,13 @@ const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ isOpen, onClose }) =>
         const validPass = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
         if (username === validUser && password === validPass) {
+            // Guardar sesión persistente
+            localStorage.setItem('admin_logged_in', 'true');
+
             // Success: Add a small delay for premium feel
             setTimeout(() => {
                 onClose();
-                router.push('/admin');
+                router.push('/admin/dashboard');
             }, 800);
         } else {
             setTimeout(() => {
